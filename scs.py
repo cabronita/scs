@@ -1,27 +1,82 @@
 #!/usr/bin/env python3
 
-import os
 from argparse import ArgumentParser
+import logging
+import os
 
 parser = ArgumentParser()
 parser.add_argument('mod_path', help='mod directory', metavar='MOD_PATH')
+parser.add_argument('scs_path', help='SCS directory', metavar='SCS_PATH')
+parser.add_argument('-v', '--verbosity', action='count', default=0,
+                    help='increase output verbosity (-vv for debug)')
 args = parser.parse_args()
 
 mod_path = args.mod_path
+scs_path = args.scs_path
+
+logger = logging.getLogger(__name__)
+if args.verbosity == 1:
+    logging.basicConfig(level=logging.INFO)
+elif args.verbosity >= 2:
+    logging.basicConfig(level=logging.DEBUG)
 
 
-def get_files_in_dir(mod_dir):
+def get_2_latest_versions(scs_path):
+    '''
+    Returns list of 2 latest versions of SCS data directories
+    '''
+    dirs = []
+    for item in os.scandir(scs_path):
+        if os.path.isdir(item) and item.name[0:2] == '1.':
+            dirs.append(os.path.join(scs_path, item.name))
+    return [dirs[-2], dirs[-1]]
+
+
+def get_mod_subdirectories(path):
+    '''
+    Returns list of subdirectories (mods) in the 'mod' directory
+    '''
+    dirs = []
+    dirpath, dirnames, filenames = next(os.walk(path))
+    for dirname in dirnames:
+        dirs.append(os.path.join(path, dirname))
+    return dirs
+
+
+def get_files_for_mod(path):
+    '''
+    Returns list of files in mod subdirectory
+    '''
     files = []
-    os.chdir(mod_dir)
+    os.chdir(path)
     for dirpath, _, filenames in os.walk('.'):
-        if dirpath != '.':  # Ignore top mod directory, as it's just metadata
+        if dirpath != '.':
             for filename in filenames:
                 files.append(os.path.join(dirpath, filename))
     return files
 
 
-print(f"Getting mod files from {mod_path}")
-mod_files = get_files_in_dir(mod_path)
+def get_all_mod_files(mods):
+    '''
+    Returns set of files from all mods
+    '''
+    files = set()
+    for mod in mods:
+        mod_files = get_files_for_mod(mod)
+        for file in mod_files:
+            files.add(file[2:])
+    return (files)
 
-for file in mod_files:
-    print(file)
+
+if __name__ == '__main__':
+    print(f"- Mod path:\n{mod_path}")
+
+    previous_version_dir, current_version_dir = get_2_latest_versions(scs_path)
+    print(f"- SCS versions:\n{previous_version_dir}\n{current_version_dir}")
+
+    mods = get_mod_subdirectories(mod_path)
+    files = get_all_mod_files(mods)
+
+    print('- Files:')
+    for file in sorted(files):
+        print(file)
