@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from argparse import ArgumentParser
-import logging
+import filecmp
 import os
 
 parser = ArgumentParser()
@@ -13,12 +13,6 @@ args = parser.parse_args()
 
 mod_path = args.mod_path
 scs_path = args.scs_path
-
-logger = logging.getLogger(__name__)
-if args.verbosity == 1:
-    logging.basicConfig(level=logging.INFO)
-elif args.verbosity >= 2:
-    logging.basicConfig(level=logging.DEBUG)
 
 
 def get_2_latest_versions(scs_path):
@@ -77,6 +71,39 @@ if __name__ == '__main__':
     mods = get_mod_subdirectories(mod_path)
     files = get_all_mod_files(mods)
 
-    print('- Files:')
-    for file in sorted(files):
-        print(file)
+    custom = []
+    changed = []
+    deprecated = []
+
+    for file in files:
+        file1 = os.path.join(previous_version_dir, file)
+        file2 = os.path.join(current_version_dir, file)
+        if os.path.isfile(file1):
+            if os.path.isfile(file2):
+                if not filecmp.cmp(file1, file2, shallow=False):
+                    changed.append(file)
+            else:
+                deprecated.append(file)
+        else:
+            custom.append(file)
+
+    if custom:
+        print("- Custom files:")
+        for i in custom:
+            print(i)
+    else:
+        print("No custom files")
+
+    if deprecated:
+        print("- Deprecated:")
+        for i in deprecated:
+            print(i)
+    else:
+        print("- No deprecated files")
+
+    if changed:
+        print("- Changed:")
+        for i in changed:
+            print(i)
+    else:
+        print("- No changes")
