@@ -92,7 +92,7 @@ if __name__ == '__main__':
         for i in custom:
             print(i)
     else:
-        print("No custom files")
+        print("- No custom files")
 
     if deprecated:
         print("- Deprecated:")
