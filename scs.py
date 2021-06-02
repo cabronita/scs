@@ -107,3 +107,5 @@ if __name__ == '__main__':
             print(i)
     else:
         print("- No changes")
+
+    input('Finished.')
