@@ -3,6 +3,7 @@
 from argparse import ArgumentParser
 import filecmp
 import os
+import sys
 
 parser = ArgumentParser()
 parser.add_argument('mod_path', help='mod directory', metavar='MOD_PATH')
@@ -65,7 +66,11 @@ def get_all_mod_files(mods):
 if __name__ == '__main__':
     print(f"- Mod path:\n{mod_path}")
 
-    previous_version_dir, current_version_dir = get_2_latest_versions(scs_path)
+    try:
+        previous_version_dir, current_version_dir = get_2_latest_versions(scs_path)
+    except IndexError as e:
+        print(f"Not enough data directories found in {scs_path}")
+        sys.exit(2)
     print(f"- SCS versions:\n{previous_version_dir}\n{current_version_dir}")
 
     mods = get_mod_subdirectories(mod_path)
