@@ -94,21 +94,21 @@ if __name__ == '__main__':
 
     if custom:
         print("- Custom files:")
-        for i in custom:
+        for i in sorted(custom):
             print(i)
     else:
         print("- No custom files")
 
     if deprecated:
         print("- Deprecated:")
-        for i in deprecated:
+        for i in sorted(deprecated):
             print(i)
     else:
         print("- No deprecated files")
 
     if changed:
         print("- Changed:")
-        for i in changed:
+        for i in sorted(changed):
             print(i)
     else:
         print("- No changes")
